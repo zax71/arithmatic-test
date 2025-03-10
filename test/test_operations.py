@@ -51,7 +51,9 @@ class TestOperations(unittest.TestCase):
             ],
         )
 
+    def test_failing(self):
+        self.assertEqual(True, False)
+
 
 if __name__ == "__main__":
     unittest.main()
-
