@@ -1,5 +1,6 @@
 from enum import Enum
 import random
+
 class Operations(Enum):
     ADD = 0
     SUBTRACT = 1
