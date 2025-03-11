@@ -27,7 +27,7 @@ class SQLiteStorage:
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS Pupils (
-                PupilID varchar(255) NOT ,
+                PupilID varchar(255) NOT NULL,
                 Name varchar(255) NOT NULL,
                 ClassID varchar(255) NOT NULL,
                 PRIMARY KEY (PupilID),
@@ -54,6 +54,7 @@ class SQLiteStorage:
             "INSERT INTO Scores VALUES(?, ?, ?)",
             (pupil.pupil_id, score, school_class.school_class_id),
         )
+        self.connection.commit()
 
     def add_pupil(self, name: str, school_class: SchoolClass) -> Pupil:
         """Adds a pupil to the database and returns their Pupil object"""
@@ -63,6 +64,7 @@ class SQLiteStorage:
             "INSERT INTO Pupils VALUES(?, ?, ?)",
             (str(pupil_uuid), name, school_class.school_class_id),
         )
+        self.connection.commit()
         return Pupil(name, pupil_uuid)
 
     def add_school_class(self, name: str) -> SchoolClass:
@@ -72,4 +74,5 @@ class SQLiteStorage:
         cursor.execute(
             "INSERT INTO Classes VALUES(?, ?)", (str(school_class_uuid), name)
         )
+        self.connection.commit()
         return SchoolClass(name, school_class_uuid)

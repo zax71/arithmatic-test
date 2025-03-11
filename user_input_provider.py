@@ -26,6 +26,17 @@ def input_int(question: str) -> int:
     return int(in_str)
 
 
+def ask_menu(title: str, questions: list[str]) -> int:
+    """Asks the user in the form of a menu"""
+    print(title)
+    for i, question in enumerate(questions):
+        print(f"{i+1}. {question}")
+    
+    while (in_int := input_int("> ")) > len(questions):
+        print("Your answer is out of range")
+    
+    return in_int
+
 def is_float(element: str) -> bool:
     """Checks if the entered element is a float"""
     try:
@@ -39,9 +50,14 @@ def is_positive_int(element: str) -> bool:
     """Checks if the entered element is a positive int"""
     try:
         number = int(element)
-        if number < 0:
+        if number <= 0:
             return False
         return True
     except ValueError:
         return False
+
+
+if __name__ == "__main__":
+    print(ask_menu("Title", ["First Q", "Second Q"]))
+    
 
