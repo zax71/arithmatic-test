@@ -20,7 +20,8 @@ def _ask_question() -> bool:
 
 def start_game():
     question_count = user_input_provider.input_int("How many questions do you want? ")
-    # TODO: Get pupil to assign score to
+    current_pupil: Pupil = storage_instance.select_pupil()
+
     score = 0
     print("Decimal values should be inputted rounded to 2dp or truncated to 3dp")
 
@@ -30,4 +31,4 @@ def start_game():
 
     print(f"Score: {score}/{question_count}: {round((score/question_count)*100)}%")
     # TODO: Finish adding score
-    storage_instance.add_score()
+    storage_instance.add_score(current_pupil, int((score/question_count)*100))

@@ -49,12 +49,12 @@ class _SQLiteStorage:
             """
         )
 
-    def add_score(self, pupil: Pupil, score_percent: int, school_class: SchoolClass):
+    def add_score(self, pupil: Pupil, score_percent: int):
         """Adds the user's score to the DB, with the score being a percentage"""
         cursor = self.connection.cursor()
         cursor.execute(
             "INSERT INTO Scores VALUES(?, ?, ?)",
-            (pupil.pupil_id, score_percent, school_class.school_class_id),
+            (pupil.pupil_id, score_percent, pupil.school_class_id),
         )
         self.connection.commit()
 
@@ -69,6 +69,22 @@ class _SQLiteStorage:
         self.connection.commit()
         return Pupil(name, pupil_uuid, school_class.school_class_id)
 
+    def remove_pupil(self, removing_pupil: Pupil) -> None:
+        """Removes a pupil from the database"""
+        cursor = self.connection.cursor()
+        cursor.execute("DELETE FROM Pupils WHERE PupilID=?", (removing_pupil.pupil_id, ))
+        self.connection.commit()
+    
+    def rename_pupil(self, renaming_pupil: Pupil, new_name: str) -> None:
+        cursor = self.connection.cursor()
+        cursor.execute(
+            """
+            UPDATE Pupils
+            SET Name=?
+            WHERE PupilID=?
+            """, (new_name, str(renaming_pupil.pupil_id)))
+        self.connection.commit()
+
     def add_school_class(self, name: str) -> SchoolClass:
         """Adds a school class to the database and returns it's type"""
         cursor = self.connection.cursor()
@@ -82,7 +98,7 @@ class _SQLiteStorage:
     def get_school_class_by_uuid(self, class_id: uuid.UUID) -> SchoolClass:
         """Gets a SchoolClass from a UUID"""
         cursor = self.connection.cursor()
-        response = cursor.execute("SELECT ClassID, ClassName FROM Classes WHERE ClassID=?", (str(class_id))).fetchone()
+        response = cursor.execute("SELECT ClassID, ClassName FROM Classes WHERE ClassID=?", (str(class_id), )).fetchone()
         if response == None:
             raise Exception("No School Class with UUID: " + str(class_id))
         
@@ -92,14 +108,19 @@ class _SQLiteStorage:
         """Removes a school class"""
         cursor = self.connection.cursor()
 
-        cursor.execute("DELETE FROM Classes WHERE ClassID=?", (class_id))
+        cursor.execute("DELETE FROM Classes WHERE ClassID=?", (str(class_id),))
         self.connection.commit()
     
     def rename_school_class_by_uuid(self, class_id: uuid.UUID, new_name: str) -> None:
         """Renames a school class, keeping the uuid the same"""
         cursor = self.connection.cursor()
 
-        cursor.execute("UPDATE Classes SET ClassName = ? WHERE ClassID = ?", (new_name, str(class_id)))
+        cursor.execute(
+            """
+            UPDATE Classes
+            SET ClassName=?
+            WHERE ClassID=?
+            """, (new_name, str(class_id)))
         self.connection.commit()
 
     
@@ -111,7 +132,7 @@ class _SQLiteStorage:
         while True:
             searching_name = user_input_provider.input_str("pupil name: ")
 
-            response = cursor.execute("SELECT Name, PupilID, ClassID FROM Pupils WHERE Name=?", (searching_name)).fetchall()
+            response = cursor.execute("SELECT Name, PupilID, ClassID FROM Pupils WHERE Name=?", (searching_name, )).fetchall()
             if len(response) == 0:
                 print("No pupils found with that name")
             if len(response) == 1:
@@ -125,7 +146,7 @@ class _SQLiteStorage:
                     looking_at_pupils.append(Pupil(current_response[0], current_response[1], current_response[2]))
                 
                 user_selected_pupil_id: int =  user_input_provider.ask_menu("Select Pupil", looking_at_pupils)
-                return looking_at_pupils[user_selected_pupil_id]
+                return looking_at_pupils[user_selected_pupil_id-1]
     
     def select_school_class(self) -> SchoolClass:
         cursor = self.connection.cursor()
@@ -137,7 +158,7 @@ class _SQLiteStorage:
             all_school_classes.append(SchoolClass(response[1], response[0]))
         
         selected_school_class_id = user_input_provider.ask_menu("Select a school class", all_school_classes)
-        return all_school_classes[selected_school_class_id]
+        return all_school_classes[selected_school_class_id-1]
 
 # This class should be a singleton. This provides an easy way to access it everywhere
 storage_instance = _SQLiteStorage(pathlib.Path(__file__).parent.resolve() / "database.db")

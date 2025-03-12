@@ -23,4 +23,4 @@ def _remove_class():
 def _rename_class():
     selected_school_class: SchoolClass = storage_instance.select_school_class()
     new_school_class_name: str = user_input_provider.input_str("New name: ")
-    storage_instance.rename_school_class_by_uuid(selected_school_class, new_school_class_name)
+    storage_instance.rename_school_class_by_uuid(selected_school_class.school_class_id, new_school_class_name)
